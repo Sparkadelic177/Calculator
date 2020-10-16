@@ -10,10 +10,11 @@
 // 10. Once the array has one element of type number return that number
 
 
-
+const rightSide = "right";
+const leftSide = 'left';
 let calculatorInputs = [];
 const result = document.getElementById("result");
-let buildNumber = "";
+const calculatorKeyCharacters = [ "/", "*","+","-" ]
 //event bubbling to all of the
 window.addEventListener("click", function (event) {
   if (!event.target.matches(".calculatorInput")) return;
@@ -27,97 +28,101 @@ function calcButtonClickHandler(value) {
       evaluate();
       break;
     case "c":
-      calculatorInputs = [];
+      clear();
       break;
-    case "/":
-    case "*":
-    case "+":
-    case "-":
-    case "(":
-    case ")":
-      buildEquation(value)
     default:
-      buildNumber += value
+      calculatorInputs.push(value);
+      displayOnInput();
       break;
   }
-  displayOnInput();
 }
 
-function buildEquation(value){
-  if(buildNumber != ""){ 
-    calculatorInputs.push(buildNumber);
-  }
-  calculatorInputs.push(value)
-  buildNumber = "";
-}
-
-//this function follows PEMDAS order
+//This folllows order of operations
 function evaluate() {
-  let paraenthesis = false;
-  do{ 
-    let equationInsideParenthesis = checkForParenthesis(); //check for undefinded
-    if(equationInsideParenthesis){
-      // paraenthesis = true;
-      multiplyOrDivide(equationInsideParenthesis);
-      additionOrSubtraction(equationInsideParenthesis);
-
-      displayOnInput()
-    }else{
-      paraenthesis = false;
-
-    }
-  }while(paraenthesis);
+    multiplyOrDivide();
+    additionOrSubtraction();
+    displayOnInput()
 }
 
 
-function multiplyOrDivide(equation){
-
-  console.log(equation);
-
-  if(equation.indexOf("*") > equation.indexOf("/")){
-    equation = divide(equation);
-    if(equation.includes("/")){
-      multiplyOrDivide(equation);
+function multiplyOrDivide(){
+  if(calculatorInputs.indexOf("*") > calculatorInputs.indexOf("/")){
+    divide();
+    if(calculatorInputs.includes("/")){
+      multiplyOrDivide();
     }
-    equation = multiply(equation);
-    if(equation.includes("*")){
-      multiplyOrDivide(equation);
+    multiply();
+    if(calculatorInputs.includes("*")){
+      multiplyOrDivide();
     }
-  }else if(equation.indexOf("/") > equation.indexOf("*")){
-    equation = multiply(equation);
-    if(equation.includes("*")){
-      multiplyOrDivide(equation);
+  }else if(calculatorInputs.indexOf("/") > calculatorInputs.indexOf("*")){
+    multiply();
+    if(calculatorInputs.includes("*")){
+      multiplyOrDivide();
     }
-    equation = divide(equation);
-    if(equation.includes("/")){
-      multiplyOrDivide(equation);
+    divide();
+    if(calculatorInputs.includes("/")){
+      multiplyOrDivide();
     }
   }
-
-  console.log(equation);
 }
 
-function multiply(equation){
-  if(equation.includes("*")){
-    let operationIndex = equation.indexOf("*");
-    let leftHandSide = equation[operationIndex - 1];
-    let rightHandSide = equation[operationIndex + 1];
-    let answer = leftHandSide * rightHandSide;
-    equation.splice(operationIndex - 1, 3, answer);
-  }
-  return equation;
-}
-
-function divide(equation){
-  if(equation.includes("/")){
-    let operationIndex = equation.indexOf("/");
-    let leftHandSide = equation[operationIndex - 1];
-    let rightHandSide = equation[operationIndex + 1];
+function divide(){
+  if(calculatorInputs.includes("/")){
+    let operationIndex = calculatorInputs.indexOf("/");
+    let leftHandSide = buildNumber(calculatorInputs, operationIndex-1, leftSide);
+    let rightHandSide = buildNumber(calculatorInputs, operationIndex+1, rightSide);
     let answer = leftHandSide / rightHandSide;
-    equation.splice(operationIndex - 1, 3, answer);
+    calculatorInputs.splice(calculatorInputs.indexOf(leftHandSide[0]), calculatorInputs.indexOf(rightHandSide[rightHandSide.length -1]), answer);
   }
-  return equation;
 }
+
+
+function multiply(){
+  if(calculatorInputs.includes("*")){
+    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("*")-1, leftSide, "*");
+    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("*")+1, rightSide, "*");
+    let answer = leftHandSide * rightHandSide;
+    calculatorInputs.splice(calculatorInputs.indexOf("*") - 1, 3, answer);
+  }
+}
+
+//builds the number for the left or right side of the operator
+function buildNumber(equation, operationIndex, side, operator){
+  let numberBuilder = []
+  if(side === leftSide){
+    let leftSideCounter = 0;
+    while(operationIndex >= 0) { 
+      if(calculatorKeyCharacters.includes(equation[operationIndex])){
+        calculatorInputs.splice(operationIndex + 1,leftSideCounter, numberBuilder.join(""));
+        return numberBuilder.join("");
+      } 
+      numberBuilder.unshift(equation[operationIndex]);
+      operationIndex -= 1; 
+      leftSideCounter+= 1;
+    }
+    //replace the single string numbers together 
+    calculatorInputs.splice(operationIndex + 1,leftSideCounter, numberBuilder.join(""));
+  }
+
+
+  if(side === rightSide){
+    let rightSideCounter = 0;
+    while(operationIndex < equation.length) { 
+      if(calculatorKeyCharacters.includes(equation[operationIndex])) {
+        calculatorInputs.splice(calculatorInputs.indexOf(operator) + 1,rightSideCounter, numberBuilder.join(""));
+        return numberBuilder.join("");
+      } 
+      numberBuilder.push(equation[operationIndex]);
+      operationIndex += 1; 
+      rightSideCounter += 1;
+    }
+    calculatorInputs.splice(calculatorInputs.indexOf(operator) + 1,rightSideCounter, numberBuilder.join(""));
+  }
+
+  return numberBuilder.join("");
+}
+
 
 function additionOrSubtraction(equation){
 
@@ -128,19 +133,25 @@ function replaceOperationWithValue(operator){
 }
 
 
-function checkForParenthesis(){
-  let equationInsideParenthesis = [];
-  for(let i = 0; i < calculatorInputs.length; i++){
-    if(calculatorInputs[i] === "("){ //if open parenthesis found
-      for(let j = i + 1; j < calculatorInputs.length; j++){
-        if(calculatorInputs[j] === ')'){
-          return equationInsideParenthesis;
-        }
-        equationInsideParenthesis.push(calculatorInputs[j]);
-      }
-    }
-  }
-  return; 
+// function checkForParenthesis(){
+//   let equationInsideParenthesis = [];
+//   for(let i = 0; i < calculatorInputs.length; i++){
+//     if(calculatorInputs[i] === "("){ //if open parenthesis found
+//       for(let j = i + 1; j < calculatorInputs.length; j++){
+//         if(calculatorInputs[j] === ')'){
+//           return equationInsideParenthesis;
+//         }
+//         equationInsideParenthesis.push(calculatorInputs[j]);
+//       }
+//     }
+//   }
+//   return; 
+// }
+
+//restart the calculator
+function clear() {
+  calculatorInputs = [];
+  displayOnInput();
 }
 
 //displays the contexts on to the calculator
