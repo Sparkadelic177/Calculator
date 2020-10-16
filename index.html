@@ -4,53 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>PEMDAS Calculator</title>
-    <style>
-      body {
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      table {
-        width: 50%;
-        height: 80%;
-      }
-
-      .title {
-        margin-bottom: 10px;
-        text-align: center;
-        width: 210px;
-        color: green;
-        border: solid black 2px;
-      }
-
-      input[type="button"] {
-        background-color: green;
-        color: black;
-        border: solid black 2px;
-        width: 100%;
-        height: 100%;
-        font-size: large;
-      }
-
-      input[type="text"] {
-        background-color: white;
-        border: solid black 2px;
-        width: 100%;
-        height: 100%;
-      }
-    </style>
+    <title>Sparky's Order Of Operations Calculator</title>
+    <link rel="stylesheet" href="index.css">
+    <script type="text/javascript" src="index.js" async></script>
   </head>
   <body>
     <table border="1">
       <tr>
-        <td colspan="3">
+        <td id="resultContainer" colspan="4">
           <input type="text" id="result" disabled />
-        </td>
-        <td>
-          <input class="calculatorInput" type="button" value="c" />
         </td>
       </tr>
       <tr>
@@ -111,13 +73,12 @@
       </tr>
       <tr>
         <td colspan="2">
-          <input class="calculatorInput" type="button" value="(" />
+          <input class="calculatorInput" type="button" value="c" />
         </td>
         <td colspan="2">
-          <input class="calculatorInput" type="button" value=")" />
+          <input class="calculatorInput" type="button" value="undo" />
         </td>
       </tr>
     </table>
-    <script src="index.js"></script>
   </body>
 </html>
