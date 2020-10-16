@@ -69,11 +69,10 @@ function multiplyOrDivide(){
 
 function divide(){
   if(calculatorInputs.includes("/")){
-    let operationIndex = calculatorInputs.indexOf("/");
-    let leftHandSide = buildNumber(calculatorInputs, operationIndex-1, leftSide);
-    let rightHandSide = buildNumber(calculatorInputs, operationIndex+1, rightSide);
+    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("/")-1, leftSide, "/");
+    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("/")+1, rightSide, "/");
     let answer = leftHandSide / rightHandSide;
-    calculatorInputs.splice(calculatorInputs.indexOf(leftHandSide[0]), calculatorInputs.indexOf(rightHandSide[rightHandSide.length -1]), answer);
+    calculatorInputs.splice(calculatorInputs.indexOf("/") - 1, 3, answer);
   }
 }
 
@@ -124,12 +123,44 @@ function buildNumber(equation, operationIndex, side, operator){
 }
 
 
-function additionOrSubtraction(equation){
-
+function additionOrSubtraction(){
+  if(calculatorInputs.indexOf("+") > calculatorInputs.indexOf("-")){
+    subtraction();
+    if(calculatorInputs.includes("-")){
+      additionOrSubtraction();
+    }
+    addition();
+    if(calculatorInputs.includes("+")){
+      additionOrSubtraction();
+    }
+  }else if(calculatorInputs.indexOf("-") > calculatorInputs.indexOf("+")){
+    addition();
+    if(calculatorInputs.includes("+")){
+      additionOrSubtraction();
+    }
+    subtraction();
+    if(calculatorInputs.includes("-")){
+      additionOrSubtraction();
+    }
+  }
 }
 
-function replaceOperationWithValue(operator){
-  // let operatorIndex = 
+function addition(){
+  if(calculatorInputs.includes("+")){
+    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("+")-1, leftSide, "+");
+    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("+")+1, rightSide, "+");
+    let answer = parseInt(leftHandSide) + parseInt(rightHandSide);
+    calculatorInputs.splice(calculatorInputs.indexOf("+") - 1, 3, answer);
+  }
+}
+
+function subtraction(){
+  if(calculatorInputs.includes("-")){
+    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("-")-1, leftSide, "-");
+    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("-")+1, rightSide, "-");
+    let answer = leftHandSide - rightHandSide;
+    calculatorInputs.splice(calculatorInputs.indexOf("-") - 1, 3, answer);
+  }
 }
 
 
