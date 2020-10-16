@@ -1,21 +1,14 @@
-// 1. User types on an event element that holds a inner text
-// 2. Push that elements inner text into an array 
-// 3. Display text to string on the output section. (Array.join())
-// 4. When user click “ = “ parse the array checks for operators ( pass array to function to iterate through array )
-// 5. Start checking for PEMDAS
-// 6. Check the entire array for parenthesis, evaluate what’s inside of the parenthesis into a stack / recursion ( if no parenthesis found continue ) 
-// 7. If parenthesis found, pass the the contents inside of the array into a new array and pass back into the parsing function and return the value inside that it into a new array.
-// 8. Look for multiplication or division operators defined as “n” and splice from n-1 and n+1 and replace with new value 
-// 9. Look for addition and subtraction operators defined as “n” and splice from n-1 and n+1 and replace with new value.
-// 10. Once the array has one element of type number return that number
-
-
 const rightSide = "right";
 const leftSide = 'left';
-let calculatorInputs = [];
+const multiplication = "*";
+const division = "/";
+const addition = "+"
+const subtraction = "-"
+let calculatorInputs = []; //holds all of the calculator inputs and displays on input
+const calculatorKeyCharacters = [ division, multiplication, addition, subtraction ]
 const result = document.getElementById("result");
-const calculatorKeyCharacters = [ "/", "*","+","-" ]
-//event bubbling to all of the
+
+//event bubbling to all of the buttons with the class of .calculatorInput
 window.addEventListener("click", function (event) {
   if (!event.target.matches(".calculatorInput")) return;
   calcButtonClickHandler(event.target.value);
@@ -30,6 +23,9 @@ function calcButtonClickHandler(value) {
     case "c":
       clear();
       break;
+    case "undo":
+      undo();
+      break;
     default:
       calculatorInputs.push(value);
       displayOnInput();
@@ -40,146 +36,148 @@ function calcButtonClickHandler(value) {
 //This folllows order of operations
 function evaluate() {
     multiplyOrDivide();
-    additionOrSubtraction();
+    addOrSubtract();
     displayOnInput()
 }
 
 
-function multiplyOrDivide(){
-  if(calculatorInputs.indexOf("*") > calculatorInputs.indexOf("/")){
-    divide();
-    if(calculatorInputs.includes("/")){
-      multiplyOrDivide();
-    }
-    multiply();
-    if(calculatorInputs.includes("*")){
-      multiplyOrDivide();
-    }
-  }else if(calculatorInputs.indexOf("/") > calculatorInputs.indexOf("*")){
-    multiply();
-    if(calculatorInputs.includes("*")){
-      multiplyOrDivide();
-    }
-    divide();
-    if(calculatorInputs.includes("/")){
-      multiplyOrDivide();
-    }
-  }
-}
-
+//divides two numbers together
 function divide(){
-  if(calculatorInputs.includes("/")){
-    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("/")-1, leftSide, "/");
-    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("/")+1, rightSide, "/");
+  if(calculatorInputs.includes(division)){
+    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf(division)-1, leftSide, division);
+    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf(division)+1, rightSide, division);
     let answer = leftHandSide / rightHandSide;
-    calculatorInputs.splice(calculatorInputs.indexOf("/") - 1, 3, answer);
+    replaceOperationWithValue(division, answer)
   }
 }
 
-
+//multiplys two numbers together
 function multiply(){
-  if(calculatorInputs.includes("*")){
-    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("*")-1, leftSide, "*");
-    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("*")+1, rightSide, "*");
+  if(calculatorInputs.includes(multiplication)){
+    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf(multiplication)-1, leftSide, multiplication);
+    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf(multiplication)+1, rightSide, multiplication);
     let answer = leftHandSide * rightHandSide;
-    calculatorInputs.splice(calculatorInputs.indexOf("*") - 1, 3, answer);
+    replaceOperationWithValue(multiplication, answer)
+  }
+}
+
+//adds two numbers together
+function add(){
+  if(calculatorInputs.includes(addition)){
+    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf(addition)-1, leftSide, addition);
+    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf(addition)+1, rightSide, addition);
+    let answer = parseInt(leftHandSide) + parseInt(rightHandSide);
+    replaceOperationWithValue(addition, answer)
+  }
+}
+
+//subtracts two numbers togther
+function subtract(){
+  if(calculatorInputs.includes(subtraction)){
+    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf(subtraction)-1, leftSide, subtraction);
+    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf(subtraction)+1, rightSide, subtraction);
+    let answer = leftHandSide - rightHandSide;
+    replaceOperationWithValue(subtraction, answer)
+  }
+}
+
+//handles muliplication or division left to right recusivley 
+function multiplyOrDivide(){
+  if(calculatorInputs.indexOf(multiplication) > calculatorInputs.indexOf(division)){
+    divide();
+    if(calculatorInputs.includes(division)){
+      multiplyOrDivide();
+    }
+    multiply();
+    if(calculatorInputs.includes(multiplication)){
+      multiplyOrDivide();
+    }
+  }else if(calculatorInputs.indexOf(division) > calculatorInputs.indexOf(multiplication)){
+    multiply();
+    if(calculatorInputs.includes(multiplication)){
+      multiplyOrDivide();
+    }
+    divide();
+    if(calculatorInputs.includes(division)){
+      multiplyOrDivide();
+    }
+  }
+}
+
+//handles addition or subtraction left to right recusivly 
+function addOrSubtract(){
+  if(calculatorInputs.indexOf(addition) > calculatorInputs.indexOf(subtraction)){
+    subtract();
+    if(calculatorInputs.includes(subtraction)){
+      addOrSubtract();
+    }
+    add();
+    if(calculatorInputs.includes(addition)){
+      addOrSubtract();
+    }
+  }else if(calculatorInputs.indexOf(subtraction) > calculatorInputs.indexOf(addition)){
+    add();
+    if(calculatorInputs.includes(addition)){
+      addOrSubtract();
+    }
+    subtract();
+    if(calculatorInputs.includes(subtraction)){
+      addOrSubtract();
+    }
   }
 }
 
 //builds the number for the left or right side of the operator
 function buildNumber(equation, operationIndex, side, operator){
   let numberBuilder = []
+
+  //builds the number of left side of the operator
   if(side === leftSide){
     let leftSideCounter = 0;
     while(operationIndex >= 0) { 
+      //if we reach a operator, replace single number strings together and return
       if(calculatorKeyCharacters.includes(equation[operationIndex])){
         calculatorInputs.splice(operationIndex + 1,leftSideCounter, numberBuilder.join(""));
         return numberBuilder.join("");
       } 
+      //unshift the strings of the left side number of the operator
       numberBuilder.unshift(equation[operationIndex]);
       operationIndex -= 1; 
       leftSideCounter+= 1;
     }
-    //replace the single string numbers together 
+    //replace the single string numbers with the numberBuilder of the left side
     calculatorInputs.splice(operationIndex + 1,leftSideCounter, numberBuilder.join(""));
   }
 
 
+  //builds the right side of the operator 
   if(side === rightSide){
     let rightSideCounter = 0;
     while(operationIndex < equation.length) { 
+      //if we reach a operator, replace single number strings together and return
       if(calculatorKeyCharacters.includes(equation[operationIndex])) {
         calculatorInputs.splice(calculatorInputs.indexOf(operator) + 1,rightSideCounter, numberBuilder.join(""));
         return numberBuilder.join("");
       } 
+      //push the strings of the right side number of the operator
       numberBuilder.push(equation[operationIndex]);
       operationIndex += 1; 
       rightSideCounter += 1;
     }
+    //replace the single number strings with the numberBuilder of the right side
     calculatorInputs.splice(calculatorInputs.indexOf(operator) + 1,rightSideCounter, numberBuilder.join(""));
   }
 
-  return numberBuilder.join("");
+  return numberBuilder.join(""); 
 }
 
-
-function additionOrSubtraction(){
-  if(calculatorInputs.indexOf("+") > calculatorInputs.indexOf("-")){
-    subtraction();
-    if(calculatorInputs.includes("-")){
-      additionOrSubtraction();
-    }
-    addition();
-    if(calculatorInputs.includes("+")){
-      additionOrSubtraction();
-    }
-  }else if(calculatorInputs.indexOf("-") > calculatorInputs.indexOf("+")){
-    addition();
-    if(calculatorInputs.includes("+")){
-      additionOrSubtraction();
-    }
-    subtraction();
-    if(calculatorInputs.includes("-")){
-      additionOrSubtraction();
-    }
-  }
+//pops the last number in the array
+function undo(){
+  calculatorInputs.pop();
+  displayOnInput();
 }
 
-function addition(){
-  if(calculatorInputs.includes("+")){
-    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("+")-1, leftSide, "+");
-    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("+")+1, rightSide, "+");
-    let answer = parseInt(leftHandSide) + parseInt(rightHandSide);
-    calculatorInputs.splice(calculatorInputs.indexOf("+") - 1, 3, answer);
-  }
-}
-
-function subtraction(){
-  if(calculatorInputs.includes("-")){
-    let leftHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("-")-1, leftSide, "-");
-    let rightHandSide = buildNumber(calculatorInputs, calculatorInputs.indexOf("-")+1, rightSide, "-");
-    let answer = leftHandSide - rightHandSide;
-    calculatorInputs.splice(calculatorInputs.indexOf("-") - 1, 3, answer);
-  }
-}
-
-
-// function checkForParenthesis(){
-//   let equationInsideParenthesis = [];
-//   for(let i = 0; i < calculatorInputs.length; i++){
-//     if(calculatorInputs[i] === "("){ //if open parenthesis found
-//       for(let j = i + 1; j < calculatorInputs.length; j++){
-//         if(calculatorInputs[j] === ')'){
-//           return equationInsideParenthesis;
-//         }
-//         equationInsideParenthesis.push(calculatorInputs[j]);
-//       }
-//     }
-//   }
-//   return; 
-// }
-
-//restart the calculator
+//restart the calculatorInputs array
 function clear() {
   calculatorInputs = [];
   displayOnInput();
@@ -188,4 +186,8 @@ function clear() {
 //displays the contexts on to the calculator
 function displayOnInput() {
   result.value = calculatorInputs.join("");
+}
+
+function replaceOperationWithValue(operator, answer){
+  calculatorInputs.splice(calculatorInputs.indexOf(operator) - 1, 3, answer);
 }
